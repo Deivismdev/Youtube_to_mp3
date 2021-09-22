@@ -14,6 +14,14 @@ from pytube import YouTube
 # Nicer UI / UI customization
 
 
+program_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(program_path)
+download_dir = 'Downloaded files'
+
+if not os.path.exists(download_dir):
+    os.makedirs(download_dir)
+os.chdir(download_dir)
+
 def convertTextToList():
     all_urls = textBox.get('1.0',END).strip().split('\n')
     if(all_urls[0]) == '': # checks if textBox is empty (not perfect since first line can be skipped) maybe fix this
@@ -22,13 +30,12 @@ def convertTextToList():
     download_button.config(state=NORMAL)
     return all_urls
 
-
 def download(all_urls):
     try:
         for url in all_urls:
             video = YouTube(url)
             video = video.streams.get_by_itag(251)
-            print(url + " " + str(video.filesize))
+            #print(url + " " + str(video.filesize))
             outfile = video.download()
 
             base, ext = os.path.splitext(outfile)
@@ -42,8 +49,9 @@ def download(all_urls):
         # maybe parse text to check what url is pasted (parse_url() from urllib.parse import urlparse)
 
 window = tk.Tk()
-window.title("Youtube download")
+window.title("Youtube to mp3")
 window.geometry('450x300')
+window.iconbitmap('..\Images\icon.ico')
 
 # #button for downloading mp4 (video & audio)
 # checkbutton_mp4 = tk.Checkbutton(window,text='mp4', anchor=tk.W, indicatoron=0,padx=7)
