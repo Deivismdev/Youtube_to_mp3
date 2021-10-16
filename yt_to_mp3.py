@@ -4,6 +4,7 @@ from tkinter.constants import END
 from pytube import YouTube
 import threading
 import tkinter.ttk as ttk
+from tkinter import filedialog
 
 program_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(program_path)
@@ -50,14 +51,28 @@ def createThreads(urls):
     except Exception:
         label_status.config(text='PASTE URL\'S FROM YOUTUBE', bg='#ff9999')
 
+def chooseDirectory():
+    global download_dir
+    directory = filedialog.askdirectory()
+    if(directory!=''):
+        download_dir = directory
+        instruction_label.config(text=f'Directory: {download_dir}')
+        os.chdir(download_dir)
+
+print(download_dir)
 window = tk.Tk()
 window.title("Youtube to mp3")
 window.geometry('600x300')
+window.minsize(400,300)
 window.iconbitmap('..\Images\icon.ico')
 
+#Choose directory button
+directory_button = tk.Button(text='Choose',font=('century gothic',9), command=chooseDirectory)
+directory_button.grid(row=0,column=2, sticky=(tk.E))
+
 # Instruction label
-instruction_label = tk.Label(window, text='Paste URL\'s below: (separate with newlines or spaces)',font=('century gothic',10))
-instruction_label.grid(row=0,column=0,columnspan=3)
+instruction_label = tk.Label(window, text=f'Directory: {download_dir} (default)',font=('century gothic',10))
+instruction_label.grid(row=0,column=1,columnspan=2)
 
 # Textbox for pasting url's
 textBox = tk.Text(window)
@@ -84,3 +99,4 @@ window.columnconfigure(2, weight=1)
 window.rowconfigure(1, weight=1)
 
 window.mainloop()
+print(download_dir)
