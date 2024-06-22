@@ -21,21 +21,3 @@ Make sure to have pytube and tkinter installed
 <pre><code>pip install pytube 
 pip install tkinter 
 </code></pre>
-
-
-## Future updates
-* Ability to choose where files will be saved <br />
-* Ability to choose between downloading mp3's and mp4's (or both) <br />
-* <span style="color:green">Downloading files in parallel (DONE!)<br /></span>
-* <span style="color:yellow"> Progress bar (kinda done)<br />
-* <span style="color:green">Fix crashing when dragging the window (DONE!) <br /></span>
-
-## Change log
-2021-09-22 v1.0 <br />
-First release  <br />
-2021-09-22 v1.1 <br />
-Downloaded mp3's are now saved into a separate directory. Code clean up  <br />
-2021-09-27 v1.2 <br />
-Videos download faster using multithreading. Program still crashes because Tkinter is single-threaded :(.<br />
-2021-10-06 v2.0 <br />
-Reimplimented multithreading (correctly this time), downloading is fast and program no longer crashes! Added progress bar + label to indicate downloading process. New logo.

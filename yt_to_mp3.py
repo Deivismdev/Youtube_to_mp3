@@ -4,7 +4,8 @@ from tkinter.constants import END
 from pytube import YouTube
 import threading
 import tkinter.ttk as ttk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
+import re
 
 program_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(program_path)
@@ -18,11 +19,20 @@ os.chdir(download_dir)
 # Puts input from textbox to a list
 def convertInputToList():
     all_urls = textBox.get('1.0',END).strip().split('\n')
-    if all_urls[0] == '':
+    if not all_urls[0]:
         label_status.config(text='PASTE URL\'S', bg='#ff9999')
-    # this if else feels wrong
+        return []
     else:
-        return all_urls
+        valid_urls = [url for url in all_urls if is_youtube_url(url)]
+        invalid_urls = [url for url in all_urls if not is_youtube_url(url)]
+        
+        if invalid_urls:
+            messagebox.showwarning("Invalid URLs", f"Some URLs are invalid and will be ignored:\n{invalid_urls}")
+        
+        return valid_urls
+
+def is_youtube_url(url):
+    return re.match(r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+$', url) is not None
 
 # Downloads the video, changes extension to .mp3
 def download(url):
@@ -63,7 +73,7 @@ print(download_dir)
 window = tk.Tk()
 window.title("Youtube to mp3")
 window.geometry('600x300')
-window.minsize(400,300)
+window.minsize(590,300)
 window.iconbitmap('..\Images\icon.ico')
 
 #Choose directory button
@@ -71,7 +81,7 @@ directory_button = tk.Button(text='Choose',font=('century gothic',9), command=ch
 directory_button.grid(row=0,column=2, sticky=(tk.E))
 
 # Instruction label
-instruction_label = tk.Label(window, text=f'Directory: {download_dir} (default)',font=('century gothic',10))
+instruction_label = tk.Label(window, text=f'Directory: {download_dir} (in working directory)',font=('century gothic',10))
 instruction_label.grid(row=0,column=1,columnspan=2)
 
 # Textbox for pasting url's
