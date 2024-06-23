@@ -34,20 +34,29 @@ def convertInputToList():
 def is_youtube_url(url):
     return re.match(r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+$', url) is not None
 
-# Downloads the video, changes extension to .mp3
+# Downloads the video
 def download(url):
     try:
         label_status.config(text='DOWNLOADING...', bg='#FFFF00')
         progress_bar.start()
         video = YouTube(url)
-        video = video.streams.get_by_itag(251)
-        outfile = video.download()
-        base, _ = os.path.splitext(outfile)
-        new_file = base + '.mp3'
-        if not(os.path.exists(new_file)):
-            os.rename(outfile, new_file)
-    except Exception:
-        label_status.config(text='PASTE URL\'S FROM YOUTUBE', bg='#ff9999')
+        if download_type.get() == "audio":
+            stream = video.streams.filter(only_audio=True).first()
+        elif download_type.get() == "video":
+            stream = video.streams.filter(progressive=True).order_by('resolution').desc().first()
+        else:  # audio+video
+            stream = video.streams.filter(progressive=True).order_by('resolution').desc().first()
+
+        outfile = stream.download()
+        if download_type.get() == "audio":
+            base, _ = os.path.splitext(outfile)
+            new_file = base + '.mp3'
+            if not os.path.exists(new_file):
+                os.rename(outfile, new_file)
+
+    except Exception as e:
+        label_status.config(text="PASTE URL'S FROM YOUTUBE", bg='#ff9999')
+        print(e)
 
     label_status.config(text='DOWNLOAD COMPLETE', bg='#4bc449')
     progress_bar.stop()
@@ -66,7 +75,7 @@ def chooseDirectory():
     directory = filedialog.askdirectory()
     if(directory!=''):
         download_dir = directory
-        instruction_label.config(text=f'Directory: {download_dir}')
+        destination_label.config(text=f'Directory: {download_dir}')
         os.chdir(download_dir)
 
 print(download_dir)
@@ -76,13 +85,11 @@ window.geometry('600x300')
 window.minsize(590,300)
 window.iconbitmap('..\Images\icon.ico')
 
-#Choose directory button
-directory_button = tk.Button(text='Choose',font=('century gothic',9), command=chooseDirectory)
-directory_button.grid(row=0,column=2, sticky=(tk.E))
+download_type = tk.StringVar(value="audio+video")
 
 # Instruction label
-instruction_label = tk.Label(window, text=f'Directory: {download_dir} (in working directory)',font=('century gothic',10))
-instruction_label.grid(row=0,column=1,columnspan=2)
+instruction_label = tk.Label(window, text=f'Paste URLs below, seperated by new lines or spaces',font=('century gothic',10))
+instruction_label.grid(row=0,column=0, sticky=tk.N,columnspan=3)
 
 # Textbox for pasting url's
 textBox = tk.Text(window)
@@ -92,18 +99,36 @@ textBox.grid(row=1,column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)
 label_status = tk.Label(window, font=('century gothic',10))
 label_status.grid(row=2,column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)
 
+# Download type buttons
+audio_button = tk.Radiobutton(window, text="Audio", variable=download_type, value="audio", font=('century gothic', 10))
+audio_button.grid(row=3, column=0, sticky=tk.N, columnspan=1)
+
+audio_video_button = tk.Radiobutton(window, text="Audio + Video", variable=download_type, value="audio+video", font=('century gothic', 10))
+audio_video_button.grid(row=3, column=1, sticky=tk.N, columnspan=1)
+
+video_button = tk.Radiobutton(window, text="Video", variable=download_type, value="video", font=('century gothic', 10))
+video_button.grid(row=3, column=2, sticky=tk.N, columnspan=1)
+
+# Destination label
+destination_label =  tk.Label(window, text=f'Files will be saved: {download_dir}',font=('century gothic',10))
+destination_label.grid(row=4,column=0, sticky=tk.N,columnspan=3)
+
+#change destination
+change_destination_button = tk.Button(text='Change destination',font=('century gothic',9), command=chooseDirectory)
+change_destination_button.grid(row=5,column=0, sticky=(tk.N, tk.S, tk.E, tk.W), columnspan=4)
+
 # Download button
 download_button = tk.Button(text='Download', font=('century gothic',15), command=lambda:createThreads(convertInputToList())) 
-download_button.grid(row=3,column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)
+download_button.grid(row=6,column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)
 
 # Progress bar
 s = ttk.Style()
 s.theme_use('clam')
 progress_bar = ttk.Progressbar(window,mode='indeterminate')        
-progress_bar.grid(row=4, column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)    
+progress_bar.grid(row=7, column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)    
 
 # Scaling with window
-window.columnconfigure(1, weight=1)
+window.columnconfigure(0, weight=1)
 window.columnconfigure(1, weight=1)
 window.columnconfigure(2, weight=1)
 window.rowconfigure(1, weight=1)
