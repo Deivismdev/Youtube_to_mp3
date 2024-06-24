@@ -91,7 +91,7 @@ def choose_destination():
 
 
 window = tk.Tk()
-window.title("Youtube to mp3")
+window.title("Youtube downloader")
 window.geometry('600x300')
 window.minsize(590,300)
 window.iconbitmap('Images\icon.ico')
