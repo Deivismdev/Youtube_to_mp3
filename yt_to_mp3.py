@@ -7,17 +7,22 @@ import tkinter.ttk as ttk
 from tkinter import filedialog, messagebox
 import re
 
-program_path = os.path.dirname(os.path.realpath(__file__))
-os.chdir(program_path)
-download_dir = 'Downloaded files'
+# program_path = os.path.dirname(os.path.realpath(__file__))
+# os.chdir(program_path)
+desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+default_download_dir = os.path.join(desktop_path, 'downloaded_from_yt')
 
-# creates directory for downloeded files
-if not os.path.exists(download_dir):
-    os.makedirs(download_dir)
-os.chdir(download_dir)
+if not os.path.exists(default_download_dir):
+    os.makedirs(default_download_dir)
+
+destination = default_download_dir
+
+# if not os.path.exists(download_dir):
+#     os.makedirs(download_dir)
+# os.chdir(download_dir)
 
 # Puts input from textbox to a list
-def convertInputToList():
+def convert_input_to_list():
     all_urls = textBox.get('1.0',END).strip().split('\n')
     if not all_urls[0]:
         label_status.config(text='PASTE URL\'S', bg='#ff9999')
@@ -25,7 +30,7 @@ def convertInputToList():
     else:
         valid_urls = [url for url in all_urls if is_youtube_url(url)]
         invalid_urls = [url for url in all_urls if not is_youtube_url(url)]
-        
+
         if invalid_urls:
             messagebox.showwarning("Invalid URLs", f"Some URLs are invalid and will be ignored:\n{invalid_urls}")
         
@@ -47,7 +52,11 @@ def download(url):
         else:  # audio+video
             stream = video.streams.filter(progressive=True).order_by('resolution').desc().first()
 
-        outfile = stream.download()
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+        
+        outfile = stream.download(output_path=destination)
+        
         if download_type.get() == "audio":
             base, _ = os.path.splitext(outfile)
             new_file = base + '.mp3'
@@ -62,7 +71,7 @@ def download(url):
     progress_bar.stop()
 
 # Creates thread for each url
-def createThreads(urls):
+def create_threads(urls):
     try:
         for url in urls:
             downloadThread=threading.Thread(target=lambda:download(url))
@@ -70,20 +79,22 @@ def createThreads(urls):
     except Exception:
         label_status.config(text='PASTE URL\'S FROM YOUTUBE', bg='#ff9999')
 
-def chooseDirectory():
-    global download_dir
-    directory = filedialog.askdirectory()
-    if(directory!=''):
-        download_dir = directory
-        destination_label.config(text=f'Directory: {download_dir}')
-        os.chdir(download_dir)
+def choose_destination():
+    global destination
+    selected_destination = filedialog.askdirectory()
+    if selected_destination:
+        destination = selected_destination
+        destination_label.config(text=f'Directory: {destination}')
+    else:
+        destination = default_download_dir
+        destination_label.config(text=f'Directory: {default_download_dir}')
 
-print(download_dir)
+
 window = tk.Tk()
 window.title("Youtube to mp3")
 window.geometry('600x300')
 window.minsize(590,300)
-window.iconbitmap('..\Images\icon.ico')
+window.iconbitmap('Images\icon.ico')
 
 download_type = tk.StringVar(value="audio+video")
 
@@ -110,15 +121,15 @@ video_button = tk.Radiobutton(window, text="Video", variable=download_type, valu
 video_button.grid(row=3, column=2, sticky=tk.N, columnspan=1)
 
 # Destination label
-destination_label =  tk.Label(window, text=f'Files will be saved: {download_dir}',font=('century gothic',10))
+destination_label =  tk.Label(window, text=f'Files will be saved: {destination}',font=('century gothic',10))
 destination_label.grid(row=4,column=0, sticky=tk.N,columnspan=3)
 
 #change destination
-change_destination_button = tk.Button(text='Change destination',font=('century gothic',9), command=chooseDirectory)
+change_destination_button = tk.Button(text='Change destination',font=('century gothic',9), command=choose_destination)
 change_destination_button.grid(row=5,column=0, sticky=(tk.N, tk.S, tk.E, tk.W), columnspan=4)
 
 # Download button
-download_button = tk.Button(text='Download', font=('century gothic',15), command=lambda:createThreads(convertInputToList())) 
+download_button = tk.Button(text='Download', font=('century gothic',15), command=lambda:create_threads(convert_input_to_list())) 
 download_button.grid(row=6,column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)
 
 # Progress bar
@@ -134,4 +145,3 @@ window.columnconfigure(2, weight=1)
 window.rowconfigure(1, weight=1)
 
 window.mainloop()
-print(download_dir)
