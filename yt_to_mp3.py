@@ -7,8 +7,9 @@ import tkinter.ttk as ttk
 from tkinter import filedialog, messagebox
 import re
 
-# program_path = os.path.dirname(os.path.realpath(__file__))
-# os.chdir(program_path)
+#TODO: add button to select quality
+# also could rewrite all this to use oop... but eehh..
+
 desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 default_download_dir = os.path.join(desktop_path, 'downloaded_from_yt')
 
@@ -17,10 +18,6 @@ if not os.path.exists(default_download_dir):
 
 destination = default_download_dir
 
-# if not os.path.exists(download_dir):
-#     os.makedirs(download_dir)
-# os.chdir(download_dir)
-
 # Puts input from textbox to a list
 def convert_input_to_list():
     all_urls = textBox.get('1.0',END).strip().split('\n')
@@ -28,9 +25,11 @@ def convert_input_to_list():
         label_status.config(text='PASTE URL\'S', bg='#ff9999')
         return []
     else:
+        # TODO: this looks stupid
         valid_urls = [url for url in all_urls if is_youtube_url(url)]
         invalid_urls = [url for url in all_urls if not is_youtube_url(url)]
 
+        # TODO: i don't like this, maybe color ignored links red in the textbox?
         if invalid_urls:
             messagebox.showwarning("Invalid URLs", f"Some URLs are invalid and will be ignored:\n{invalid_urls}")
         
@@ -71,6 +70,7 @@ def download(url):
     progress_bar.stop()
 
 # Creates thread for each url
+# TODO: this feels wrong...
 def create_threads(urls):
     try:
         for url in urls:
@@ -129,6 +129,8 @@ change_destination_button = tk.Button(text='Change destination',font=('century g
 change_destination_button.grid(row=5,column=0, sticky=(tk.N, tk.S, tk.E, tk.W), columnspan=4)
 
 # Download button
+# TODO: button should call download(), convert_input_to_list() and thread stuff should be called from download()
+# also check if lambda is necessary here...
 download_button = tk.Button(text='Download', font=('century gothic',15), command=lambda:create_threads(convert_input_to_list())) 
 download_button.grid(row=6,column=0,sticky=(tk.N, tk.S, tk.E, tk.W),columnspan=3)
 
